@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ultimate Guide to VO2max</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A thematic, single-page dashboard structure is used instead of mirroring the report's linear format. It is organized into logical, user-centric sections: 'The Basics', 'Why It Matters', 'Measurement', 'Improvement', and 'Benchmarks'. This design prioritizes user flow and exploration. A top navigation bar allows users to jump to any section, catering to different interests (e.g., an athlete might jump to 'Improvement', while a beginner might start at 'The Basics'). Key interactions include toggles for definitions, clickable diagrams to explain complex relationships (like Performance Factors), and dynamic charts that update based on user input (e.g., selecting age/gender for benchmarks). This structure makes the dense information digestible and personally relevant, enhancing understanding and engagement. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: VO2max Reference Values (Table 2) -> Goal: Compare/Personalize -> Viz: Interactive Bar Chart -> Interaction: User selects Age & Gender from dropdowns, chart updates -> Justification: Transforms a static, dense table into a personal, easy-to-understand visualization. Library: Chart.js.
+        - Report Info: Smartwatch Accuracy Comparison (Table 1) -> Goal: Compare -> Viz: Horizontal Bar Chart -> Interaction: Static view with tooltips -> Justification: Clearly visualizes the over/underestimation and error margins for each brand, making it more impactful than a text table. Library: Chart.js.
+        - Report Info: Performance Factors (VO2max, Lactate Threshold, Running Economy) -> Goal: Relate/Explain -> Viz: Interactive Card Diagram -> Interaction: User clicks on each factor to reveal its description -> Justification: Breaks down the multifaceted concept of performance into manageable, interactive components, preventing cognitive overload. Method: HTML/CSS/JS.
+        - Report Info: Training Principles (80/20 Rule) -> Goal: Inform/Proportion -> Viz: Donut Chart -> Interaction: Static view with tooltips -> Justification: Provides a quick, memorable visual representation of a key training philosophy. Library: Chart.js.
+        - Report Info: Age-related VO2max Decline -> Goal: Inform Trend -> Viz: Line Chart -> Interaction: Static view -> Justification: Visualizes the natural decline and the impact of fitness levels over time. Library: Chart.js.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body { font-family: 'Inter', 'Sarabun', sans-serif; scroll-behavior: smooth; }
+        .chart-container { position: relative; width: 100%; height: 300px; max-height: 40vh; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .nav-link { transition: color 0.3s, border-color 0.3s; }
+        .nav-link.active, .nav-link:hover { color: #E07A5F; border-bottom-color: #E07A5F; }
+        .section-card { transition: transform 0.3s, box-shadow 0.3s; }
+        .section-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+        .tab-btn.active { background-color: #3D405B; color: #F8F7F4; }
+        .tab-btn { transition: background-color 0.3s, color 0.3s; }
+        .interactive-factor.active { border-color: #81B29A; background-color: #eaf3ee; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
+    </style>
+</head>
+<body class="bg-[#F8F7F4] text-[#3D405B]">
+
+    <header class="bg-[#F8F7F4]/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
+        <nav class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl md:text-2xl font-bold text-[#3D405B]" data-translate="title">The Science of VO2max</h1>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#basics" class="nav-link text-gray-600 font-semibold border-b-2 border-transparent pb-1" data-translate="nav_basics">The Basics</a>
+                    <a href="#matters" class="nav-link text-gray-600 font-semibold border-b-2 border-transparent pb-1" data-translate="nav_matters">Why It Matters</a>
+                    <a href="#measure" class="nav-link text-gray-600 font-semibold border-b-2 border-transparent pb-1" data-translate="nav_measure">Measurement</a>
+                    <a href="#improve" class="nav-link text-gray-600 font-semibold border-b-2 border-transparent pb-1" data-translate="nav_improve">Improvement</a>
+                    <a href="#benchmarks" class="nav-link text-gray-600 font-semibold border-b-2 border-transparent pb-1" data-translate="nav_benchmarks">Benchmarks</a>
+                    <button id="lang-switcher" class="px-3 py-1 rounded-md text-sm font-semibold bg-gray-200 hover:bg-gray-300">ไทย</button>
+                </div>
+                <button id="mobile-menu-button" class="md:hidden text-2xl">☰</button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-4 pb-4">
+             <a href="#basics" class="block py-2 text-gray-600 font-semibold" data-translate="nav_basics_mob">The Basics</a>
+             <a href="#matters" class="block py-2 text-gray-600 font-semibold" data-translate="nav_matters_mob">Why It Matters</a>
+             <a href="#measure" class="block py-2 text-gray-600 font-semibold" data-translate="nav_measure_mob">Measurement</a>
+             <a href="#improve" class="block py-2 text-gray-600 font-semibold" data-translate="nav_improve_mob">Improvement</a>
+             <a href="#benchmarks" class="block py-2 text-gray-600 font-semibold" data-translate="nav_benchmarks_mob">Benchmarks</a>
+             <button id="lang-switcher-mob" class="mt-2 w-full text-left px-3 py-1 rounded-md text-sm font-semibold bg-gray-200 hover:bg-gray-300">ไทย</button>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 md:py-12">
+
+        <section id="basics" class="mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2" data-translate="basics_title">What is VO2max?</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8" data-translate="basics_subtitle">This section breaks down the core concept of VO2max. It's the "gold standard" measure of your cardiorespiratory fitness, indicating how effectively your body uses oxygen during intense exercise.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                    <h3 class="text-xl font-semibold mb-4" data-translate="basics_metric_title">A Fundamental Metric</h3>
+                    <p class="mb-4" data-translate="basics_metric_desc">VO2max, or maximal oxygen uptake, is the maximum rate (V) of oxygen (O2) your body can consume during peak exertion. It's a powerful indicator of your aerobic "engine size."</p>
+                    <div class="flex space-x-2 mb-4">
+                        <button id="relativeBtn" class="tab-btn flex-1 py-2 px-4 rounded-md text-sm font-semibold bg-gray-200" data-translate="relative_btn">Relative (mL/kg/min)</button>
+                        <button id="absoluteBtn" class="tab-btn flex-1 py-2 px-4 rounded-md text-sm font-semibold bg-gray-200" data-translate="absolute_btn">Absolute (L/min)</button>
+                    </div>
+                    <div id="unit-explanation" class="bg-gray-100 p-4 rounded-md">
+                        <p class="text-sm"></p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                     <h3 class="text-xl font-semibold mb-4 text-center" data-translate="basics_system_title">An Integrated System</h3>
+                     <p class="text-center text-sm text-gray-500 mb-4" data-translate="basics_system_desc">VO2max depends on the coordinated effort of your lungs, heart, blood, and muscles.</p>
+                    <div class="flex items-center justify-around space-x-2">
+                        <div class="text-center">
+                            <div class="text-4xl">🫁</div>
+                            <p class="font-semibold mt-1" data-translate="lungs">Lungs</p>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-400">→</div>
+                        <div class="text-center">
+                            <div class="text-4xl">❤️</div>
+                            <p class="font-semibold mt-1" data-translate="heart">Heart</p>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-400">→</div>
+                         <div class="text-center">
+                            <div class="text-4xl">🩸</div>
+                            <p class="font-semibold mt-1" data-translate="blood">Blood</p>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-400">→</div>
+                        <div class="text-center">
+                            <div class="text-4xl">💪</div>
+                            <p class="font-semibold mt-1" data-translate="muscles">Muscles</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="matters" class="mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2" data-translate="matters_title">Why It Matters</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8" data-translate="matters_subtitle">Discover why improving your VO2max is crucial. It's not just for elite athletes; a higher VO2max is one of the strongest predictors of long-term health and longevity, while also being the foundation for endurance performance.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                    <h3 class="text-xl font-semibold mb-4" data-translate="matters_health_title">Health & Longevity</h3>
+                    <p class="mb-4 text-sm text-gray-600" data-translate="matters_health_desc">VO2max naturally declines with age. However, regular exercise can significantly slow this decline. A higher VO2max is strongly linked to a lower risk of chronic diseases and increased lifespan.</p>
+                    <div class="chart-container max-w-xl mx-auto">
+                        <canvas id="ageDeclineChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                    <h3 class="text-xl font-semibold mb-4" data-translate="matters_performance_title">Running Performance</h3>
+                    <p class="mb-4 text-sm text-gray-600" data-translate="matters_performance_desc">While a high VO2max is the "price of admission" for elite performance, it's not the whole story. Click the factors below to see how they create a complete runner.</p>
+                    <div id="performance-factors" class="space-y-3">
+                         <div class="interactive-factor border-2 border-gray-200 p-3 rounded-lg cursor-pointer" data-factor="vo2max">
+                             <h4 class="font-bold" data-translate="factor_vo2max">🚀 VO2max (Aerobic Power)</h4>
+                         </div>
+                         <div class="interactive-factor border-2 border-gray-200 p-3 rounded-lg cursor-pointer" data-factor="threshold">
+                             <h4 class="font-bold" data-translate="factor_threshold">🏃‍♀️ Lactate Threshold</h4>
+                         </div>
+                         <div class="interactive-factor border-2 border-gray-200 p-3 rounded-lg cursor-pointer" data-factor="economy">
+                             <h4 class="font-bold" data-translate="factor_economy">⚙️ Running Economy</h4>
+                         </div>
+                    </div>
+                    <div id="factor-explanation" class="bg-gray-100 p-4 rounded-md mt-4 min-h-[80px]">
+                        <p class="text-sm"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="measure" class="mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2" data-translate="measure_title">How to Measure It</h2>
+             <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8" data-translate="measure_subtitle">From precise lab tests to convenient smartwatches, there are several ways to determine your VO2max. This section explores the options, their accuracy, and how to get the most reliable data from your device.</p>
+            <div class="text-center mb-6">
+                <div class="inline-flex rounded-md shadow-sm" role="group">
+                    <button type="button" class="measurement-btn py-2 px-4 text-sm font-medium text-gray-900 bg-white rounded-l-lg border border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-[#81B29A]" data-content="lab" data-translate="measure_lab_btn">Lab Test</button>
+                    <button type="button" class="measurement-btn py-2 px-4 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-[#81B29A]" data-content="field" data-translate="measure_field_btn">Field Tests</button>
+                    <button type="button" class="measurement-btn py-2 px-4 text-sm font-medium text-gray-900 bg-white rounded-r-md border border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-[#81B29A]" data-content="smartwatch" data-translate="measure_smartwatch_btn">Smartwatches</button>
+                </div>
+            </div>
+            <div id="measurement-content" class="bg-white p-6 rounded-lg shadow-lg min-h-[300px]"></div>
+        </section>
+
+        <section id="improve" class="mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2" data-translate="improve_title">How to Improve It</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8" data-translate="improve_subtitle">Your VO2max is highly trainable. This section provides evidence-based strategies, from specific workout structures to lifestyle factors, that will help you boost your aerobic capacity, with potential gains of 15-20%.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                 <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                     <h3 class="text-xl font-semibold mb-4" data-translate="improve_training_title">Training Strategies</h3>
+                     <p class="mb-4 text-sm text-gray-600" data-translate="improve_training_desc">A mix of high-intensity work and a strong aerobic base is the key. The "80/20 rule" is a popular model: 80% easy, 20% hard.</p>
+                     <div class="chart-container max-w-xs mx-auto mb-6">
+                         <canvas id="trainingSplitChart"></canvas>
+                     </div>
+                     <div id="accordion-container">
+                         <div class="accordion-item border-b border-gray-200">
+                             <button class="accordion-header w-full text-left py-4 font-semibold flex justify-between items-center">
+                                 <span data-translate="improve_hiit">High-Intensity Intervals (HIIT)</span>
+                                 <span class="transform transition-transform duration-300">▼</span>
+                             </button>
+                             <div class="accordion-content">
+                                 <div class="p-4 bg-gray-50">
+                                     <p class="text-sm" data-translate="improve_hiit_desc">HIIT is the most effective way to boost VO2max. These workouts involve short, hard efforts near your maximum capacity, followed by recovery.</p>
+                                     <ul class="list-disc list-inside text-sm mt-2">
+                                         <li data-translate="improve_hiit_ex1"><strong>Norwegian 4x4:</strong> 4 rounds of 4 mins at 90-95% max HR, with 3 mins active recovery.</li>
+                                         <li data-translate="improve_hiit_ex2"><strong>Short Repeats:</strong> 6-10 x 400m at your 1500m-3K race pace.</li>
+                                         <li data-translate="improve_hiit_ex3"><strong>Hill Repeats:</strong> 5 x 3 minutes running hard uphill.</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item border-b border-gray-200">
+                             <button class="accordion-header w-full text-left py-4 font-semibold flex justify-between items-center">
+                                 <span data-translate="improve_base">Aerobic Base (Zone 2)</span>
+                                 <span class="transform transition-transform duration-300">▼</span>
+                             </button>
+                             <div class="accordion-content">
+                                 <div class="p-4 bg-gray-50">
+                                    <p class="text-sm" data-translate="improve_base_desc">This is the foundation of your fitness. Long, steady-state runs at a conversational pace (60-70% max HR) build endurance and support your ability to handle harder workouts.</p>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+                 <div class="space-y-6">
+                     <div class="bg-white p-6 rounded-lg shadow-md section-card">
+                        <h3 class="text-xl font-semibold mb-2" data-translate="improve_factors_title">Other Key Factors</h3>
+                        <p class="mb-4 text-sm text-gray-600" data-translate="improve_factors_desc">Training isn't the only lever you can pull. These lifestyle factors also play a significant role.</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <span class="text-2xl mr-3">⚖️</span>
+                                <div><h4 class="font-semibold" data-translate="factor_weight">Weight Management</h4><p class="text-sm text-gray-500" data-translate="factor_weight_desc">Since relative VO2max is measured per kg of body weight, reducing excess body fat directly increases your score.</p></div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-2xl mr-3">🏔️</span>
+                                <div><h4 class="font-semibold" data-translate="factor_altitude">Altitude Training</h4><p class="text-sm text-gray-500" data-translate="factor_altitude_desc">Training at high altitude stimulates red blood cell production, enhancing your blood's oxygen-carrying capacity.</p></div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-2xl mr-3">🍎</span>
+                                <div><h4 class="font-semibold" data-translate="factor_nutrition">Nutrition & Recovery</h4><p class="text-sm text-gray-500" data-translate="factor_nutrition_desc">A balanced diet, proper hydration, and adequate sleep are critical for fueling workouts and allowing your body to adapt and improve.</p></div>
+                            </li>
+                        </ul>
+                     </div>
+                 </div>
+            </div>
+        </section>
+
+        <section id="benchmarks" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2" data-translate="benchmarks_title">Where Do You Stand?</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8" data-translate="benchmarks_subtitle">Compare your potential VO2max to reference values for different fitness levels. Select your age and gender below to see a personalized chart. This helps you set realistic goals and understand your current fitness level in a broader context.</p>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-6">
+                    <div class="w-full md:w-auto">
+                        <label for="age-select" class="block mb-1 text-sm font-medium text-gray-900" data-translate="age_label">Age Group:</label>
+                        <select id="age-select" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#81B29A] focus:border-[#81B29A] block w-full p-2.5">
+                            <option value="20-29">20-29</option>
+                            <option value="30-39">30-39</option>
+                            <option value="40-49">40-49</option>
+                            <option value="50-59">50-59</option>
+                            <option value="60-69">60-69</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-auto">
+                        <label for="gender-select" class="block mb-1 text-sm font-medium text-gray-900" data-translate="gender_label">Gender:</label>
+                        <select id="gender-select" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#81B29A] focus:border-[#81B29A] block w-full p-2.5">
+                            <option value="Men" data-translate="gender_men">Men</option>
+                            <option value="Women" data-translate="gender_women">Women</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container max-w-3xl mx-auto">
+                    <canvas id="benchmarkChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-4 py-6 text-center text-sm">
+            <p data-translate="footer_main">Interactive VO2max guide. Data synthesized from "The Science of VO2max" report.</p>
+            <p class="text-gray-400 mt-1" data-translate="footer_sub">This application is for informational purposes only.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            let currentLang = 'en';
+
+            const translations = {
+                en: {
+                    title: "The Science of VO2max",
+                    nav_basics: "The Basics",
+                    nav_matters: "Why It Matters",
+                    nav_measure: "Measurement",
+                    nav_improve: "Improvement",
+                    nav_benchmarks: "Benchmarks",
+                    nav_basics_mob: "The Basics",
+                    nav_matters_mob: "Why It Matters",
+                    nav_measure_mob: "Measurement",
+                    nav_improve_mob: "Improvement",
+                    nav_benchmarks_mob: "Benchmarks",
+                    basics_title: "What is VO2max?",
+                    basics_subtitle: "This section breaks down the core concept of VO2max. It's the \"gold standard\" measure of your cardiorespiratory fitness, indicating how effectively your body uses oxygen during intense exercise.",
+                    basics_metric_title: "A Fundamental Metric",
+                    basics_metric_desc: "VO2max, or maximal oxygen uptake, is the maximum rate (V) of oxygen (O2) your body can consume during peak exertion. It's a powerful indicator of your aerobic \"engine size.\"",
+                    relative_btn: "Relative (mL/kg/min)",
+                    absolute_btn: "Absolute (L/min)",
+                    basics_system_title: "An Integrated System",
+                    basics_system_desc: "VO2max depends on the coordinated effort of your lungs, heart, blood, and muscles.",
+                    lungs: "Lungs",
+                    heart: "Heart",
+                    blood: "Blood",
+                    muscles: "Muscles",
+                    matters_title: "Why It Matters",
+                    matters_subtitle: "Discover why improving your VO2max is crucial. It's not just for elite athletes; a higher VO2max is one of the strongest predictors of long-term health and longevity, while also being the foundation for endurance performance.",
+                    matters_health_title: "Health & Longevity",
+                    matters_health_desc: "VO2max naturally declines with age. However, regular exercise can significantly slow this decline. A higher VO2max is strongly linked to a lower risk of chronic diseases and increased lifespan.",
+                    matters_performance_title: "Running Performance",
+                    matters_performance_desc: "While a high VO2max is the \"price of admission\" for elite performance, it's not the whole story. Click the factors below to see how they create a complete runner.",
+                    factor_vo2max: "🚀 VO2max (Aerobic Power)",
+                    factor_threshold: "🏃‍♀️ Lactate Threshold",
+                    factor_economy: "⚙️ Running Economy",
+                    measure_title: "How to Measure It",
+                    measure_subtitle: "From precise lab tests to convenient smartwatches, there are several ways to determine your VO2max. This section explores the options, their accuracy, and how to get the most reliable data from your device.",
+                    measure_lab_btn: "Lab Test",
+                    measure_field_btn: "Field Tests",
+                    measure_smartwatch_btn: "Smartwatches",
+                    improve_title: "How to Improve It",
+                    improve_subtitle: "Your VO2max is highly trainable. This section provides evidence-based strategies, from specific workout structures to lifestyle factors, that will help you boost your aerobic capacity, with potential gains of 15-20%.",
+                    improve_training_title: "Training Strategies",
+                    improve_training_desc: "A mix of high-intensity work and a strong aerobic base is the key. The \"80/20 rule\" is a popular model: 80% easy, 20% hard.",
+                    improve_hiit: "High-Intensity Intervals (HIIT)",
+                    improve_hiit_desc: "HIIT is the most effective way to boost VO2max. These workouts involve short, hard efforts near your maximum capacity, followed by recovery.",
+                    improve_hiit_ex1: "<strong>Norwegian 4x4:</strong> 4 rounds of 4 mins at 90-95% max HR, with 3 mins active recovery.",
+                    improve_hiit_ex2: "<strong>Short Repeats:</strong> 6-10 x 400m at your 1500m-3K race pace.",
+                    improve_hiit_ex3: "<strong>Hill Repeats:</strong> 5 x 3 minutes running hard uphill.",
+                    improve_base: "Aerobic Base (Zone 2)",
+                    improve_base_desc: "This is the foundation of your fitness. Long, steady-state runs at a conversational pace (60-70% max HR) build endurance and support your ability to handle harder workouts.",
+                    improve_factors_title: "Other Key Factors",
+                    improve_factors_desc: "Training isn't the only lever you can pull. These lifestyle factors also play a significant role.",
+                    factor_weight: "Weight Management",
+                    factor_weight_desc: "Since relative VO2max is measured per kg of body weight, reducing excess body fat directly increases your score.",
+                    factor_altitude: "Altitude Training",
+                    factor_altitude_desc: "Training at high altitude stimulates red blood cell production, enhancing your blood's oxygen-carrying capacity.",
+                    factor_nutrition: "Nutrition & Recovery",
+                    factor_nutrition_desc: "A balanced diet, proper hydration, and adequate sleep are critical for fueling workouts and allowing your body to adapt and improve.",
+                    benchmarks_title: "Where Do You Stand?",
+                    benchmarks_subtitle: "Compare your potential VO2max to reference values for different fitness levels. Select your age and gender below to see a personalized chart. This helps you set realistic goals and understand your current fitness level in a broader context.",
+                    age_label: "Age Group:",
+                    gender_label: "Gender:",
+                    gender_men: "Men",
+                    gender_women: "Women",
+                    footer_main: "Interactive VO2max guide. Data synthesized from \"The Science of VO2max\" report.",
+                    footer_sub: "This application is for informational purposes only.",
+                },
+                th: {
+                    title: "วิทยาศาสตร์แห่ง VO2max",
+                    nav_basics: "ข้อมูลพื้นฐาน",
+                    nav_matters: "ความสำคัญ",
+                    nav_measure: "การวัดผล",
+                    nav_improve: "การพัฒนา",
+                    nav_benchmarks: "เกณฑ์มาตรฐาน",
+                    nav_basics_mob: "ข้อมูลพื้นฐาน",
+                    nav_matters_mob: "ความสำคัญ",
+                    nav_measure_mob: "การวัดผล",
+                    nav_improve_mob: "การพัฒนา",
+                    nav_benchmarks_mob: "เกณฑ์มาตรฐาน",
+                    basics_title: "VO2max คืออะไร?",
+                    basics_subtitle: "ส่วนนี้จะอธิบายแนวคิดหลักของ VO2max ซึ่งเป็นมาตรฐาน 'สูงสุด' ในการวัดสมรรถภาพของระบบหัวใจและหลอดเลือด ซึ่งบ่งชี้ว่าร่างกายของคุณใช้ออกซิเจนได้อย่างมีประสิทธิภาพเพียงใดระหว่างการออกกำลังกายอย่างหนัก",
+                    basics_metric_title: "ตัวชี้วัดพื้นฐาน",
+                    basics_metric_desc: "VO2max หรือการดูดซึมออกซิเจนสูงสุด คืออัตราสูงสุด (V) ของออกซิเจน (O2) ที่ร่างกายของคุณสามารถใช้ได้ระหว่างการออกกำลังกายอย่างเต็มที่ เป็นตัวบ่งชี้ที่ทรงพลังของ 'ขนาดเครื่องยนต์' แอโรบิกของคุณ",
+                    relative_btn: "สัมพัทธ์ (มล./กก./นาที)",
+                    absolute_btn: "สัมบูรณ์ (ลิตร/นาที)",
+                    basics_system_title: "ระบบที่ทำงานร่วมกัน",
+                    basics_system_desc: "VO2max ขึ้นอยู่กับการทำงานร่วมกันของปอด หัวใจ เลือด และกล้ามเนื้อ",
+                    lungs: "ปอด",
+                    heart: "หัวใจ",
+                    blood: "เลือด",
+                    muscles: "กล้ามเนื้อ",
+                    matters_title: "ความสำคัญ",
+                    matters_subtitle: "ค้นพบว่าทำไมการปรับปรุง VO2max ของคุณจึงสำคัญ ไม่ใช่แค่สำหรับนักกีฬาชั้นยอดเท่านั้น ค่า VO2max ที่สูงขึ้นเป็นหนึ่งในตัวทำนายที่แข็งแกร่งที่สุดของสุขภาพและอายุขัยที่ยืนยาว และยังเป็นรากฐานสำหรับสมรรถนะความทนทาน",
+                    matters_health_title: "สุขภาพและอายุขัย",
+                    matters_health_desc: "VO2max จะลดลงตามธรรมชาติเมื่ออายุมากขึ้น อย่างไรก็ตาม การออกกำลังกายเป็นประจำสามารถชะลอการลดลงนี้ได้อย่างมีนัยสำคัญ ค่า VO2max ที่สูงขึ้นมีความเชื่อมโยงอย่างมากกับความเสี่ยงที่ลดลงของโรคเรื้อรังและอายุขัยที่เพิ่มขึ้น",
+                    matters_performance_title: "สมรรถนะการวิ่ง",
+                    matters_performance_desc: "ในขณะที่ VO2max ที่สูงเป็น 'ตั๋วเข้า' สู่สมรรถนะระดับสูง แต่มันไม่ใช่ทั้งหมด คลิกที่ปัจจัยด้านล่างเพื่อดูว่าพวกมันสร้างนักวิ่งที่สมบูรณ์แบบได้อย่างไร",
+                    factor_vo2max: "🚀 VO2max (พลังงานแอโรบิก)",
+                    factor_threshold: "🏃‍♀️ ระดับแลคเตท",
+                    factor_economy: "⚙️ ประสิทธิภาพการวิ่ง",
+                    measure_title: "จะวัดได้อย่างไร?",
+                    measure_subtitle: "ตั้งแต่การทดสอบในห้องปฏิบัติการที่แม่นยำไปจนถึงสมาร์ทวอทช์ที่สะดวกสบาย มีหลายวิธีในการหาค่า VO2max ของคุณ ส่วนนี้จะสำรวจตัวเลือกต่างๆ ความแม่นยำ และวิธีรับข้อมูลที่น่าเชื่อถือที่สุดจากอุปกรณ์ของคุณ",
+                    measure_lab_btn: "ทดสอบในแล็บ",
+                    measure_field_btn: "ทดสอบภาคสนาม",
+                    measure_smartwatch_btn: "สมาร์ทวอทช์",
+                    improve_title: "จะปรับปรุงได้อย่างไร?",
+                    improve_subtitle: "VO2max ของคุณสามารถฝึกฝนได้สูง ส่วนนี้จะให้กลยุทธ์ตามหลักฐาน ตั้งแต่โครงสร้างการออกกำลังกายที่เฉพาะเจาะจงไปจนถึงปัจจัยด้านไลฟ์สไตล์ ที่จะช่วยเพิ่มความสามารถทางแอโรบิกของคุณ โดยมีโอกาสเพิ่มขึ้น 15-20%",
+                    improve_training_title: "กลยุทธ์การฝึก",
+                    improve_training_desc: "การผสมผสานระหว่างการฝึกความเข้มข้นสูงและฐานแอโรบิกที่แข็งแกร่งคือกุญแจสำคัญ 'กฎ 80/20' เป็นโมเดลที่นิยม: 80% ง่าย, 20% หนัก",
+                    improve_hiit: "การฝึกแบบหนักสลับเบา (HIIT)",
+                    improve_hiit_desc: "HIIT เป็นวิธีที่มีประสิทธิภาพที่สุดในการเพิ่ม VO2max การออกกำลังกายเหล่านี้เกี่ยวข้องกับการใช้แรงอย่างหนักในช่วงสั้นๆ ใกล้กับความสามารถสูงสุดของคุณ ตามด้วยการพักฟื้น",
+                    improve_hiit_ex1: "<strong>Norwegian 4x4:</strong> 4 รอบ รอบละ 4 นาที ที่ 90-95% ของอัตราการเต้นหัวใจสูงสุด พร้อมการพักฟื้นแบบแอคทีฟ 3 นาที",
+                    improve_hiit_ex2: "<strong>Short Repeats:</strong> 6-10 x 400 เมตร ที่ความเร็วการแข่งขัน 1,500-3,000 เมตรของคุณ",
+                    improve_hiit_ex3: "<strong>Hill Repeats:</strong> 5 x 3 นาที วิ่งขึ้นเนินอย่างหนัก",
+                    improve_base: "ฐานแอโรบิก (โซน 2)",
+                    improve_base_desc: "นี่คือรากฐานของความฟิตของคุณ การวิ่งในสภาวะคงที่เป็นเวลานานด้วยความเร็วที่สามารถสนทนาได้ (60-70% ของอัตราการเต้นหัวใจสูงสุด) ช่วยสร้างความทนทานและสนับสนุนความสามารถในการรับมือกับการออกกำลังกายที่หนักขึ้น",
+                    improve_factors_title: "ปัจจัยสำคัญอื่นๆ",
+                    improve_factors_desc: "การฝึกไม่ใช่คันโยกเดียวที่คุณสามารถดึงได้ ปัจจัยด้านไลฟ์สไตล์เหล่านี้ก็มีบทบาทสำคัญเช่นกัน",
+                    factor_weight: "การจัดการน้ำหนัก",
+                    factor_weight_desc: "เนื่องจาก VO2max สัมพัทธ์วัดต่อน้ำหนักตัวเป็นกิโลกรัม การลดไขมันส่วนเกินในร่างกายจึงเพิ่มคะแนนของคุณโดยตรง",
+                    factor_altitude: "การฝึกในที่สูง",
+                    factor_altitude_desc: "การฝึกในที่สูงจะกระตุ้นการผลิตเซลล์เม็ดเลือดแดง ซึ่งช่วยเพิ่มความสามารถในการบรรทุกออกซิเจนของเลือด",
+                    factor_nutrition: "โภชนาการและการฟื้นฟู",
+                    factor_nutrition_desc: "อาหารที่สมดุล การให้ความชุ่มชื้นที่เหมาะสม และการนอนหลับที่เพียงพอมีความสำคัญอย่างยิ่งต่อการเติมพลังให้กับการออกกำลังกายและช่วยให้ร่างกายปรับตัวและพัฒนา",
+                    benchmarks_title: "คุณอยู่จุดไหน?",
+                    benchmarks_subtitle: "เปรียบเทียบค่า VO2max ของคุณกับค่าอ้างอิงสำหรับระดับความฟิตต่างๆ เลือกอายุและเพศของคุณด้านล่างเพื่อดูแผนภูมิส่วนบุคคล สิ่งนี้ช่วยให้คุณตั้งเป้าหมายที่เป็นจริงและเข้าใจระดับความฟิตปัจจุบันของคุณในบริบทที่กว้างขึ้น",
+                    age_label: "กลุ่มอายุ:",
+                    gender_label: "เพศ:",
+                    gender_men: "ชาย",
+                    gender_women: "หญิง",
+                    footer_main: "คู่มือ VO2max แบบอินเทอร์แอคทีฟ ข้อมูลสังเคราะห์จากรายงาน 'The Science of VO2max'",
+                    footer_sub: "แอปพลิเคชันนี้มีวัตถุประสงค์เพื่อให้ข้อมูลเท่านั้น",
+                }
+            };
+
+            const data = {
+                unitExplanation: {
+                    en: {
+                        relative: "<strong>Most Common:</strong> Expressed as milliliters of oxygen per kilogram of body weight per minute (mL/kg/min). This allows for fair comparisons between individuals of different sizes, making it crucial for sports like running.",
+                        absolute: "<strong>Total Consumption:</strong> Measured in liters of oxygen per minute (L/min). This reflects the total oxygen your body uses and is less common for comparing athletes in weight-bearing sports."
+                    },
+                    th: {
+                        relative: "<strong>พบบ่อยที่สุด:</strong> แสดงเป็นมิลลิลิตรของออกซิเจนต่อน้ำหนักตัวหนึ่งกิโลกรัมต่อนาที (มล./กก./นาที) ซึ่งช่วยให้สามารถเปรียบเทียบได้อย่างเป็นธรรมระหว่างบุคคลที่มีขนาดต่างกัน ทำให้มีความสำคัญสำหรับกีฬาเช่นการวิ่ง",
+                        absolute: "<strong>การบริโภคทั้งหมด:</strong> วัดเป็นลิตรของออกซิเจนต่อนาที (ลิตร/นาที) ซึ่งสะท้อนถึงออกซิเจนทั้งหมดที่ร่างกายของคุณใช้และไม่ค่อยใช้ในการเปรียบเทียบนักกีฬาในกีฬาที่ต้องรับน้ำหนัก"
+                    }
+                },
+                performanceFactors: {
+                    en: {
+                        vo2max: "<strong>The Engine:</strong> This is your maximum aerobic power—the highest rate you can produce energy using oxygen. It sets the ceiling for your endurance potential.",
+                        threshold: "<strong>The Red Line:</strong> This is the highest percentage of your VO2max you can sustain for a long time without overwhelming lactate buildup. A higher threshold means you can hold a faster pace for longer.",
+                        economy: "<strong>The Fuel Efficiency:</strong> This is how efficiently you use oxygen at a given speed. Better economy means you use less energy (and oxygen) to run at the same pace, allowing you to go faster or longer."
+                    },
+                     th: {
+                        vo2max: "<strong>เครื่องยนต์:</strong> นี่คือพลังแอโรบิกสูงสุดของคุณ—อัตราสูงสุดที่คุณสามารถผลิตพลังงานโดยใช้ออกซิเจน มันกำหนดเพดานศักยภาพความทนทานของคุณ",
+                        threshold: "<strong>เส้นแดง:</strong> นี่คือเปอร์เซ็นต์สูงสุดของ VO2max ที่คุณสามารถรักษาไว้ได้เป็นเวลานานโดยไม่มีการสะสมของแลคเตทมากเกินไป เกณฑ์ที่สูงขึ้นหมายความว่าคุณสามารถรักษาความเร็วที่เร็วขึ้นได้นานขึ้น",
+                        economy: "<strong>ประสิทธิภาพการใช้เชื้อเพลิง:</strong> นี่คือประสิทธิภาพในการใช้ออกซิเจนที่ความเร็วที่กำหนด ประสิทธิภาพที่ดีขึ้นหมายความว่าคุณใช้พลังงาน (และออกซิเจน) น้อยลงในการวิ่งด้วยความเร็วเท่าเดิม ทำให้คุณไปได้เร็วขึ้นหรือนานขึ้น"
+                    }
+                },
+                measurementContent: {
+                    en: {
+                        lab: `
+                            <h3 class="text-xl font-semibold mb-2">Gold Standard: Laboratory Test</h3>
+                            <p class="mb-4">Direct measurement via indirect calorimetry is the most accurate method. It involves a graded exercise test on a treadmill or bike while wearing a mask to analyze inhaled and exhaled gases.</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>Unparalleled Accuracy:</strong> Provides a true VO2max value.</li>
+                                <li><strong>Rich Data:</strong> Also measures your true max heart rate and lactate/ventilatory thresholds, which are key for creating precise training zones.</li>
+                                <li><strong>Drawbacks:</strong> Expensive and not easily accessible for most people.</li>
+                            </ul>
+                        `,
+                        field: `
+                            <h3 class="text-xl font-semibold mb-2">Practical & Accessible: Field Tests</h3>
+                            <p class="mb-4">Field tests are indirect estimations of VO2max based on performance. They are practical and can be done without specialized equipment, but are less precise than lab tests.</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>Cooper 12-Minute Run:</strong> Run as far as possible in 12 minutes. Distance is correlated to VO2max.</li>
+                                <li><strong>Balke Test:</strong> Run or walk on a treadmill with increasing incline.</li>
+                                <li><strong>1-Mile Best Effort Run:</strong> While not a direct VO2max *measurement*, a maximal 1-mile effort can provide data (like heart rate and time) that some formulas and apps use to *estimate* VO2max. It is an indirect indicator, not a direct measure.</li>
+                            </ul>
+                        `,
+                        smartwatch: `
+                            <h3 class="text-xl font-semibold mb-2">Convenient Estimation: Smartwatches</h3>
+                            <p class="mb-4">Smartwatches estimate VO2max using heart rate, GPS data, and personal metrics (age, gender, weight). They are convenient but their reliability varies.</p>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li><strong>How they work:</strong> Algorithms analyze your heart rate response to a given pace or power output.</li>
+                                <li><strong>Reliability:</strong> Generally, smartwatches provide a reasonable estimate for tracking trends, but absolute accuracy can vary by brand and individual. Consistency in measurement conditions (e.g., same terrain, stable heart rate data) improves reliability.</li>
+                                <li><strong>No "Best" Brand:</strong> There isn't one universally "best" brand; accuracy can differ based on the algorithm and sensors. Generally, devices from major sports tech companies (Garmin, Apple, Polar, Fitbit) are relatively consistent with each other for tracking *changes* in your VO2max. Significant differences in absolute values among brands are common, but they tend to be consistent in showing your progress or decline.</li>
+                            </ul>
+                            <h4 class="font-semibold mb-2">Smartwatch Accuracy Overview (Average Error %):</h4>
+                            <div class="chart-container max-w-xl mx-auto">
+                                <canvas id="smartwatchAccuracyChart"></canvas>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4"><em>Note: Values are illustrative and based on general trends found in various studies, not specific research data. Accuracy varies based on model, software updates, and individual physiology.</em></p>
+                        `
+                    },
+                    th: {
+                        lab: `
+                            <h3 class="text-xl font-semibold mb-2">มาตรฐานสูงสุด: การทดสอบในห้องปฏิบัติการ</h3>
+                            <p class="mb-4">การวัดโดยตรงผ่านการวัดปริมาณความร้อนทางอ้อมเป็นวิธีที่แม่นยำที่สุด ประกอบด้วยการทดสอบการออกกำลังกายแบบขั้นบันไดบนลู่วิ่งหรือจักรยานขณะสวมหน้ากากเพื่อวิเคราะห์ก๊าซที่หายใจเข้าและออก</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>ความแม่นยำที่ไม่มีใครเทียบได้:</strong> ให้ค่า VO2max ที่แท้จริง</li>
+                                <li><strong>ข้อมูลที่หลากหลาย:</strong> ยังวัดอัตราการเต้นของหัวใจสูงสุดที่แท้จริงและเกณฑ์แลคเตท/การหายใจ ซึ่งเป็นกุญแจสำคัญในการสร้างโซนการฝึกที่แม่นยำ</li>
+                                <li><strong>ข้อเสีย:</strong> มีราคาแพงและเข้าถึงได้ยากสำหรับคนส่วนใหญ่</li>
+                            </ul>
+                        `,
+                        field: `
+                            <h3 class="text-xl font-semibold mb-2">ใช้งานได้จริงและเข้าถึงง่าย: การทดสอบภาคสนาม</h3>
+                            <p class="mb-4">การทดสอบภาคสนามเป็นการประมาณค่า VO2max ทางอ้อมตามสมรรถนะ ซึ่งใช้งานได้จริงและสามารถทำได้โดยไม่ต้องใช้อุปกรณ์พิเศษ แต่มีความแม่นยำน้อยกว่าการทดสอบในห้องปฏิบัติการ</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>Cooper 12-Minute Run:</strong> วิ่งให้ไกลที่สุดใน 12 นาที ระยะทางมีความสัมพันธ์กับ VO2max</li>
+                                <li><strong>Balke Test:</strong> วิ่งหรือเดินบนลู่วิ่งที่มีความชันเพิ่มขึ้น</li>
+                                <li><strong>1-Mile Best Effort Run:</strong> แม้จะไม่ใช่การ *วัด* VO2max โดยตรง แต่การวิ่ง 1 ไมล์อย่างเต็มที่สามารถให้ข้อมูล (เช่น อัตราการเต้นของหัวใจและเวลา) ที่บางสูตรและแอปใช้เพื่อ *ประมาณค่า* VO2max เป็นตัวบ่งชี้ทางอ้อม ไม่ใช่การวัดโดยตรง</li>
+                            </ul>
+                        `,
+                        smartwatch: `
+                            <h3 class="text-xl font-semibold mb-2">การประมาณค่าที่สะดวก: สมาร์ทวอทช์</h3>
+                            <p class="mb-4">สมาร์ทวอทช์ประมาณค่า VO2max โดยใช้อัตราการเต้นของหัวใจ ข้อมูล GPS และข้อมูลส่วนตัว (อายุ เพศ น้ำหนัก) สะดวกแต่ความน่าเชื่อถือแตกต่างกันไป</p>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li><strong>วิธีการทำงาน:</strong> อัลกอริทึมวิเคราะห์การตอบสนองของอัตราการเต้นของหัวใจต่อความเร็วหรือกำลังที่กำหนด</li>
+                                <li><strong>ความน่าเชื่อถือ:</strong> โดยทั่วไปแล้ว สมาร์ทวอทช์ให้ค่าประมาณที่สมเหตุสมผลสำหรับการติดตามแนวโน้ม แต่ความแม่นยำที่แท้จริงอาจแตกต่างกันไปตามยี่ห้อและบุคคล ความสม่ำเสมอในเงื่อนไขการวัด (เช่น ภูมิประเทศเดียวกัน ข้อมูลอัตราการเต้นของหัวใจที่เสถียร) ช่วยเพิ่มความน่าเชื่อถือ</li>
+                                <li><strong>ไม่มียี่ห้อ "ดีที่สุด":</strong> ไม่มียี่ห้อใดที่ดีที่สุดในระดับสากล ความแม่นยำอาจแตกต่างกันไปตามอัลกอริทึมและเซ็นเซอร์ โดยทั่วไป อุปกรณ์จากบริษัทเทคโนโลยีกีฬาชั้นนำ (Garmin, Apple, Polar, Fitbit) มีความสอดคล้องกันในการติดตาม *การเปลี่ยนแปลง* ของ VO2max ของคุณ ความแตกต่างอย่างมีนัยสำคัญในค่าสัมบูรณ์ระหว่างแบรนด์เป็นเรื่องปกติ แต่พวกเขามักจะสอดคล้องกันในการแสดงความก้าวหน้าหรือการลดลงของคุณ</li>
+                            </ul>
+                            <h4 class="font-semibold mb-2">ภาพรวมความแม่นยำของสมาร์ทวอทช์ (ข้อผิดพลาดเฉลี่ย %):</h4>
+                            <div class="chart-container max-w-xl mx-auto">
+                                <canvas id="smartwatchAccuracyChart"></canvas>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4"><em>หมายเหตุ: ค่าต่างๆ เป็นเพียงภาพประกอบและอิงตามแนวโน้มทั่วไปที่พบในการศึกษาต่างๆ ไม่ใช่ข้อมูลการวิจัยเฉพาะ ความแม่นยำจะแตกต่างกันไปตามรุ่น การอัปเดตซอฟต์แวร์ และสรีรวิทยาของแต่ละบุคคล</em></p>
+                        `
+                    }
+                },
+                benchmarks: {
+                    "Men": {
+                        "20-29": { "Excellent": ">60", "Good": "52-60", "Above Average": "47-51", "Average": "42-46", "Below Average": "37-41", "Poor": "<37" },
+                        "30-39": { "Excellent": ">56", "Good": "49-56", "Above Average": "43-48", "Average": "39-42", "Below Average": "34-38", "Poor": "<34" },
+                        "40-49": { "Excellent": ">51", "Good": "45-51", "Above Average": "39-44", "Average": "35-38", "Below Average": "30-34", "Poor": "<30" },
+                        "50-59": { "Excellent": ">45", "Good": "40-45", "Above Average": "36-39", "Average": "32-35", "Below Average": "27-31", "Poor": "<27" },
+                        "60-69": { "Excellent": ">41", "Good": "36-41", "Above Average": "32-35", "Average": "29-31", "Below Average": "25-28", "Poor": "<25" }
+                    },
+                    "Women": {
+                        "20-29": { "Excellent": ">56", "Good": "47-56", "Above Average": "42-46", "Average": "37-41", "Below Average": "33-36", "Poor": "<33" },
+                        "30-39": { "Excellent": ">52", "Good": "44-52", "Above Average": "37-43", "Average": "33-36", "Below Average": "29-32", "Poor": "<29" },
+                        "40-49": { "Excellent": ">47", "Good": "40-47", "Above Average": "34-39", "Average": "30-33", "Below Average": "26-29", "Poor": "<26" },
+                        "50-59": { "Excellent": ">42", "Good": "36-42", "Above Average": "30-35", "Average": "27-29", "Below Average": "23-26", "Poor": "<23" },
+                        "60-69": { "Excellent": ">37", "Good": "32-37", "Above Average": "27-31", "Average": "24-26", "Below Average": "20-23", "Poor": "<20" }
+                    }
+                },
+                benchmarkLabels: {
+                    en: { "Excellent": "Excellent", "Good": "Good", "Above Average": "Above Average", "Average": "Average", "Below Average": "Below Average", "Poor": "Poor" },
+                    th: { "Excellent": "ยอดเยี่ยม", "Good": "ดี", "Above Average": "สูงกว่าค่าเฉลี่ย", "Average": "ปานกลาง", "Below Average": "ต่ำกว่าค่าเฉลี่ย", "Poor": "ต่ำ" }
+                },
+                smartwatchAccuracy: {
+                    labels: ['Garmin', 'Apple Watch', 'Fitbit', 'Polar'],
+                    overestimation: [2.5, 3.0, 4.0, 1.5], /* Average % overestimation */
+                    underestimation: [1.8, 2.2, 3.5, 1.0]  /* Average % underestimation */
+                },
+                 ageDeclineData: {
+                    labels: ['20', '30', '40', '50', '60', '70', '80'],
+                    datasets: {
+                        en: {
+                            highlyActive: 'Highly Active',
+                            moderatelyActive: 'Moderately Active',
+                            sedentary: 'Sedentary'
+                        },
+                        th: {
+                            highlyActive: 'กระตือรือร้นสูง',
+                            moderatelyActive: 'กระตือรือร้นปานกลาง',
+                            sedentary: 'ไม่ค่อยเคลื่อนไหว'
+                        }
+                    },
+                    highlyActive: [65, 62, 58, 54, 50, 45, 40], /* Illustrative data */
+                    moderatelyActive: [50, 47, 43, 39, 35, 30, 25],
+                    sedentary: [40, 37, 33, 29, 25, 20, 15]
+                },
+                trainingSplitLabels: {
+                    en: ['Easy/Zone 2 (80%)', 'Hard/High-Intensity (20%)'],
+                    th: ['ง่าย/โซน 2 (80%)', 'หนัก/ความเข้มข้นสูง (20%)']
+                }
+            };
+
+            const primaryColor = '#3D405B';
+            const secondaryColor = '#81B29A';
+            const accentColor = '#E07A5F';
+            const lightColor = '#F8F7F4';
+
+            function switchLanguage() {
+                currentLang = currentLang === 'en' ? 'th' : 'en';
+                document.documentElement.lang = currentLang;
+                document.getElementById('lang-switcher').textContent = currentLang === 'en' ? 'ไทย' : 'English';
+                document.getElementById('lang-switcher-mob').textContent = currentLang === 'en' ? 'ไทย' : 'English';
+                
+                document.querySelectorAll('[data-translate]').forEach(el => {
+                    const key = el.getAttribute('data-translate');
+                    if (translations[currentLang][key]) {
+                        el.innerHTML = translations[currentLang][key];
+                    }
+                });
+
+                // Update dynamic content
+                updateAllDynamicContent();
+            }
+
+            document.getElementById('lang-switcher').addEventListener('click', switchLanguage);
+            document.getElementById('lang-switcher-mob').addEventListener('click', switchLanguage);
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            document.querySelectorAll('.nav-link, #mobile-menu a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    mobileMenu.classList.add('hidden');
+                    if(this.classList.contains('nav-link')) {
+                        document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        document.querySelectorAll('.nav-link').forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === '#' + entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            document.querySelectorAll('section[id]').forEach(section => {
+                observer.observe(section);
+            });
+
+            // Basics Section Logic
+            const relativeBtn = document.getElementById('relativeBtn');
+            const absoluteBtn = document.getElementById('absoluteBtn');
+            const unitExplanationDiv = document.getElementById('unit-explanation').querySelector('p');
+
+            function updateUnitExplanation(unitType) {
+                unitExplanationDiv.innerHTML = data.unitExplanation[currentLang][unitType];
+                relativeBtn.classList.remove('active');
+                absoluteBtn.classList.remove('active');
+                if (unitType === 'relative') {
+                    relativeBtn.classList.add('active');
+                } else {
+                    absoluteBtn.classList.add('active');
+                }
+            }
+            relativeBtn.addEventListener('click', () => updateUnitExplanation('relative'));
+            absoluteBtn.addEventListener('click', () => updateUnitExplanation('absolute'));
+            
+            // Matters Section Logic - Performance Factors
+            const performanceFactorElements = document.querySelectorAll('.interactive-factor');
+            const factorExplanationDiv = document.getElementById('factor-explanation').querySelector('p');
+            
+            function updateFactorExplanation(factor) {
+                factorExplanationDiv.innerHTML = data.performanceFactors[currentLang][factor];
+                performanceFactorElements.forEach(el => el.classList.remove('active'));
+                document.querySelector(`.interactive-factor[data-factor="${factor}"]`).classList.add('active');
+            }
+
+            performanceFactorElements.forEach(el => {
+                el.addEventListener('click', function() {
+                    updateFactorExplanation(this.dataset.factor);
+                });
+            });
+            
+            // Matters Section Logic - Age Decline Chart
+            const ctxAgeDecline = document.getElementById('ageDeclineChart').getContext('2d');
+            let ageDeclineChart = null;
+            function renderAgeDeclineChart() {
+                if (ageDeclineChart) ageDeclineChart.destroy();
+                const datasetLabels = data.ageDeclineData.datasets[currentLang];
+                ageDeclineChart = new Chart(ctxAgeDecline, {
+                type: 'line',
+                data: {
+                    labels: data.ageDeclineData.labels,
+                    datasets: [
+                        {
+                            label: datasetLabels.highlyActive,
+                            data: data.ageDeclineData.highlyActive,
+                            borderColor: secondaryColor,
+                            backgroundColor: 'rgba(129, 178, 154, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 4,
+                            pointBackgroundColor: secondaryColor
+                        },
+                        {
+                            label: datasetLabels.moderatelyActive,
+                            data: data.ageDeclineData.moderatelyActive,
+                            borderColor: accentColor,
+                            backgroundColor: 'rgba(224, 122, 95, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                             pointRadius: 4,
+                            pointBackgroundColor: accentColor
+                        },
+                         {
+                            label: datasetLabels.sedentary,
+                            data: data.ageDeclineData.sedentary,
+                            borderColor: primaryColor,
+                            backgroundColor: 'rgba(61, 64, 91, 0.2)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 4,
+                            pointBackgroundColor: primaryColor
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { font: { family: 'Inter, Sarabun' } }
+                        },
+                        title: {
+                            display: true,
+                            text: currentLang === 'en' ? 'VO2max Decline with Age and Activity Level (Illustrative)' : 'การลดลงของ VO2max ตามอายุและระดับกิจกรรม (ภาพประกอบ)',
+                            font: { size: 16, family: 'Inter, Sarabun' },
+                            color: primaryColor
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) { return (currentLang === 'en' ? 'Age: ' : 'อายุ: ') + context[0].label; },
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    label += context.raw + ' mL/kg/min';
+                                    return label;
+                                }
+                            },
+                            bodyFont: { family: 'Inter, Sarabun' },
+                            titleFont: { family: 'Inter, Sarabun' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: currentLang === 'en' ? 'Age (Years)' : 'อายุ (ปี)', font: { family: 'Inter, Sarabun' }, color: primaryColor },
+                            ticks: { font: { family: 'Inter, Sarabun' } }
+                        },
+                        y: {
+                            title: { display: true, text: 'VO2max (mL/kg/min)', font: { family: 'Inter, Sarabun' }, color: primaryColor },
+                            beginAtZero: false, min: 10, ticks: { font: { family: 'Inter, Sarabun' } }
+                        }
+                    }
+                }
+            });
+            }
+
+
+            // Measurement Section Logic
+            const measurementButtons = document.querySelectorAll('.measurement-btn');
+            const measurementContentDiv = document.getElementById('measurement-content');
+            
+            function updateMeasurementContent(contentType) {
+                measurementContentDiv.innerHTML = data.measurementContent[currentLang][contentType];
+                measurementButtons.forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`.measurement-btn[data-content="${contentType}"]`).classList.add('active');
+
+                if (contentType === 'smartwatch') {
+                    renderSmartwatchAccuracyChart();
+                }
+            }
+
+            measurementButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    updateMeasurementContent(this.dataset.content);
+                });
+            });
+            
+            let smartwatchChart = null; // To store the chart instance
+            function renderSmartwatchAccuracyChart() {
+                const ctxSmartwatch = document.getElementById('smartwatchAccuracyChart');
+                if (!ctxSmartwatch) return;
+                if (smartwatchChart) smartwatchChart.destroy();
+
+                smartwatchChart = new Chart(ctxSmartwatch, {
+                    type: 'bar',
+                    data: {
+                        labels: data.smartwatchAccuracy.labels,
+                        datasets: [
+                            {
+                                label: currentLang === 'en' ? 'Average Overestimation (%)' : 'การประเมินค่าสูงเกินไปโดยเฉลี่ย (%)',
+                                data: data.smartwatchAccuracy.overestimation,
+                                backgroundColor: accentColor,
+                                borderColor: accentColor,
+                                borderWidth: 1
+                            },
+                            {
+                                label: currentLang === 'en' ? 'Average Underestimation (%)' : 'การประเมินค่าต่ำเกินไปโดยเฉลี่ย (%)',
+                                data: data.smartwatchAccuracy.underestimation,
+                                backgroundColor: secondaryColor,
+                                borderColor: secondaryColor,
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top', labels: { font: { family: 'Inter, Sarabun' } } },
+                            title: {
+                                display: true,
+                                text: currentLang === 'en' ? 'Smartwatch VO2max Estimation Accuracy (Illustrative Average Error)' : 'ความแม่นยำในการประมาณค่า VO2max ของสมาร์ทวอทช์ (ข้อผิดพลาดเฉลี่ย)',
+                                font: { size: 16, family: 'Inter, Sarabun' },
+                                color: primaryColor
+                            },
+                            tooltip: {
+                                callbacks: { label: function(context) { return `${context.dataset.label || ''}: ${context.raw}%`; } },
+                                bodyFont: { family: 'Inter, Sarabun' },
+                                titleFont: { family: 'Inter, Sarabun' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: { display: true, text: currentLang === 'en' ? 'Percentage Error' : 'เปอร์เซ็นต์ข้อผิดพลาด', font: { family: 'Inter, Sarabun' }, color: primaryColor },
+                                ticks: { font: { family: 'Inter, Sarabun' } }
+                            },
+                            y: { ticks: { font: { family: 'Inter, Sarabun' } } }
+                        }
+                    }
+                });
+            }
+
+            // Improvement Section Logic - Training Split Chart
+            const ctxTrainingSplit = document.getElementById('trainingSplitChart').getContext('2d');
+            let trainingSplitChart = null;
+            function renderTrainingSplitChart() {
+                if (trainingSplitChart) trainingSplitChart.destroy();
+                trainingSplitChart = new Chart(ctxTrainingSplit, {
+                type: 'doughnut',
+                data: {
+                    labels: data.trainingSplitLabels[currentLang],
+                    datasets: [{
+                        data: [80, 20],
+                        backgroundColor: [secondaryColor, accentColor],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: 'Inter, Sarabun' } } },
+                        title: {
+                            display: true,
+                            text: currentLang === 'en' ? '80/20 Training Rule' : 'กฎการฝึก 80/20',
+                            font: { size: 16, family: 'Inter, Sarabun' },
+                            color: primaryColor
+                        },
+                        tooltip: {
+                            callbacks: { label: function(context) { return `${context.label}: ${context.formattedValue}%`; } },
+                            bodyFont: { family: 'Inter, Sarabun' },
+                            titleFont: { family: 'Inter, Sarabun' }
+                        }
+                    }
+                }
+            });
+            }
+            
+
+            // Improvement Section Logic - Accordion
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('span:last-child');
+                    
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        document.querySelectorAll('.accordion-content').forEach(item => { item.style.maxHeight = null; });
+                        document.querySelectorAll('.accordion-header span:last-child').forEach(item => { item.style.transform = 'rotate(0deg)'; });
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+
+            // Benchmarks Section Logic
+            const ageSelect = document.getElementById('age-select');
+            const genderSelect = document.getElementById('gender-select');
+            const ctxBenchmark = document.getElementById('benchmarkChart').getContext('2d');
+            let benchmarkChart = null;
+
+            function renderBenchmarkChart() {
+                if (benchmarkChart) benchmarkChart.destroy();
+
+                const selectedAge = ageSelect.value;
+                const selectedGender = genderSelect.value;
+                const benchmarkData = data.benchmarks[selectedGender][selectedAge];
+
+                const labels = Object.keys(benchmarkData).map(key => data.benchmarkLabels[currentLang][key]);
+                const values = Object.values(benchmarkData).map(range => {
+                    if (range.includes('>')) return parseInt(range.replace('>', '')) + 5;
+                    if (range.includes('<')) return parseInt(range.replace('<', '')) - 5;
+                    const [min, max] = range.split('-').map(Number);
+                    return (min + max) / 2;
+                });
+
+                benchmarkChart = new Chart(ctxBenchmark, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `VO2max (mL/kg/min)`,
+                            data: values,
+                            backgroundColor: ['#81B29A', '#9AD2B7', '#F2CC8F', '#E07A5F', '#C15C42', '#A33C29'],
+                            borderColor: primaryColor,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: {
+                                display: true,
+                                text: `${translations[currentLang].benchmarks_title} - ${genderSelect.options[genderSelect.selectedIndex].text}, ${currentLang === 'en' ? 'Age' : 'อายุ'} ${selectedAge}`,
+                                font: { size: 16, family: 'Inter, Sarabun' },
+                                color: primaryColor
+                            },
+                             tooltip: {
+                                callbacks: {
+                                    title: function(context) { return context[0].label; },
+                                    label: function(context) {
+                                        const originalKey = Object.keys(data.benchmarkLabels[currentLang]).find(key => data.benchmarkLabels[currentLang][key] === context.label);
+                                        const range = data.benchmarks[selectedGender][selectedAge][originalKey];
+                                        return `VO2max: ${range} mL/kg/min`;
+                                    }
+                                },
+                                bodyFont: { family: 'Inter, Sarabun' },
+                                titleFont: { family: 'Inter, Sarabun' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: currentLang === 'en' ? 'Fitness Category' : 'ระดับความฟิต', font: { family: 'Inter, Sarabun' }, color: primaryColor },
+                                ticks: { font: { family: 'Inter, Sarabun' } }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'VO2max (mL/kg/min)', font: { family: 'Inter, Sarabun' }, color: primaryColor },
+                                ticks: { font: { family: 'Inter, Sarabun' } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            ageSelect.addEventListener('change', renderBenchmarkChart);
+            genderSelect.addEventListener('change', renderBenchmarkChart);
+
+            function updateAllDynamicContent() {
+                // Determine the currently active tab/button before re-rendering
+                const activeUnitType = document.querySelector('#relativeBtn.active') ? 'relative' : 'absolute';
+                const activeFactor = document.querySelector('.interactive-factor.active')?.dataset.factor || 'vo2max';
+                const activeMeasurement = document.querySelector('.measurement-btn.active')?.dataset.content || 'lab';
+                
+                // Re-render all dynamic components
+                updateUnitExplanation(activeUnitType);
+                updateFactorExplanation(activeFactor);
+                updateMeasurementContent(activeMeasurement); // This will re-render smartwatch chart if active
+                renderAgeDeclineChart();
+                renderTrainingSplitChart();
+                renderBenchmarkChart();
+            }
+
+            // Initial setup
+            updateAllDynamicContent();
+
+        });
+    </script>
+</body>
+</html>
